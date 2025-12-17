@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <application
+        android:allowBackup="true"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.EcommerceElectrocart">
+        <activity
+            android:name=".MyOrdersActivity"
+            android:exported="false"
+            android:label="My Orders"
+            android:theme="@style/Theme.EcommerceElectrocart" />
+        <activity
+            android:name=".SettingsActivity"
+            android:exported="false"
+            android:label="Settings"
+            android:theme="@style/Theme.EcommerceElectrocart" />
+        <activity
+            android:name=".AddEditAddressActivity"
+            android:exported="false"
+            android:label="Add/Edit Address"
+            android:theme="@style/Theme.EcommerceElectrocart" />
+        <activity
+            android:name=".AdminAnalyticsActivity"
+            android:exported="false"
+            android:label="Sales Analytics"
+            android:theme="@style/Theme.EcommerceElectrocart" />
+        <activity
+            android:name=".AddEditProductActivity"
+            android:exported="false"
+            android:label="Add/Edit Product"
+            android:theme="@style/Theme.EcommerceElectrocart" />
+        <activity
+            android:name=".ViewOrdersActivity"
+            android:exported="false"
+            android:label="View Orders"
+            android:theme="@style/Theme.EcommerceElectrocart" />
+        <activity
+            android:name=".UserManagementActivity"
+            android:exported="false"
+            android:label="User Management"
+            android:theme="@style/Theme.EcommerceElectrocart" />
+        <activity
+            android:name=".ManageProductsActivity"
+            android:exported="false"
+            android:label="Manage Products"
+            android:theme="@style/Theme.EcommerceElectrocart" />
+        <activity
+            android:name=".AdminDashboardActivity"
+            android:exported="false"
+            android:label="Admin Panel"
+            android:theme="@style/Theme.EcommerceElectrocart" />
+        <activity
+            android:name=".AddressActivity"
+            android:exported="false"
+            android:label="My Addresses"
+            android:theme="@style/Theme.EcommerceElectrocart" />
+        <activity
+            android:name=".PaymentActivity"
+            android:exported="false"
+            android:label="Payment"
+            android:theme="@style/Theme.EcommerceElectrocart" />
+        <activity
+            android:name=".CheckoutActivity"
+            android:exported="false"
+            android:label="Checkout"
+            android:theme="@style/Theme.EcommerceElectrocart" />
+        <activity
+            android:name=".ProductDetailActivity"
+            android:exported="false"
+            android:label="Product Details"
+            android:theme="@style/Theme.EcommerceElectrocart" />
+        <activity
+            android:name=".SearchActivity"
+            android:exported="false"
+            android:label="Search Products"
+            android:theme="@style/Theme.EcommerceElectrocart" />
+        <activity
+            android:name=".DashboardActivity"
+            android:exported="true"
+            android:label="@string/title_activity_dashboard"
+            android:theme="@style/Theme.EcommerceElectrocart" />
+        <!-- Facebook Login Configuration -->
+        <meta-data
+            android:name="com.facebook.sdk.ApplicationId"
+            android:value="@string/facebook_app_id" />
+        <meta-data
+            android:name="com.facebook.sdk.ClientToken"
+            android:value="@string/facebook_client_token" />
+
+        <activity
+            android:name="com.facebook.FacebookActivity"
+            android:configChanges="keyboard|keyboardHidden|screenLayout|screenSize|orientation"
+            android:label="@string/app_name" />
+        <activity
+            android:name="com.facebook.CustomTabActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data android:scheme="@string/fb_login_protocol_scheme" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".ForgetPasswordActivity"
+            android:exported="false"
+            android:label="@string/title_activity_forget_password"
+            android:theme="@style/Theme.EcommerceElectrocart" />
+        <activity
+            android:name=".SignupActivity"
+            android:exported="false"
+            android:label="@string/title_activity_signup"
+            android:theme="@style/Theme.EcommerceElectrocart" />
+        <activity
+            android:name=".LoginActivity"
+            android:exported="true"
+            android:label="@string/title_activity_login"
+            android:theme="@style/Theme.EcommerceElectrocart">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".MainActivity"
+            android:exported="false"
+            android:label="@string/app_name"
+            android:theme="@style/Theme.EcommerceElectrocart" />
+    </application>
+
+</manifest>

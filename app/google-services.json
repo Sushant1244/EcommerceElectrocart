@@ -1,0 +1,68 @@
+{
+  "project_info": {
+    "project_number": "1024345712556",
+    "project_id": "electro-cart-9d3b0",
+    "storage_bucket": "electro-cart-9d3b0.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1024345712556:android:99b69993bcbc105f69bc09",
+        "android_client_info": {
+          "package_name": "com.example.e_commerceelectrocart"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1024345712556-dque7ba4h2o6epp0rp3efqufghuo610t.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDqdn4lAxSnlWss4k1o0whUcFUH6-PnCmg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1024345712556-dque7ba4h2o6epp0rp3efqufghuo610t.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1024345712556:android:15bbe00a6e16f09369bc09",
+        "android_client_info": {
+          "package_name": "com.example.electrocart"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1024345712556-dque7ba4h2o6epp0rp3efqufghuo610t.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDqdn4lAxSnlWss4k1o0whUcFUH6-PnCmg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1024345712556-dque7ba4h2o6epp0rp3efqufghuo610t.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
