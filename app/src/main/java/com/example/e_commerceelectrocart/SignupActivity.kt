@@ -6,6 +6,7 @@ import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.e_commerceelectrocart.databinding.ActivitySignupBinding
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import com.google.firebase.database.FirebaseDatabase
@@ -51,9 +52,7 @@ class SignupActivity : AppCompatActivity() {
                         FirebaseDatabase.getInstance().getReference("Users").child(user.uid)
                             .setValue(userData).addOnCompleteListener { dbTask ->
                                 if (dbTask.isSuccessful) {
-                                    Toast.makeText(this, "Account Created Successfully", Toast.LENGTH_SHORT).show()
-                                    startActivity(Intent(this, LoginActivity::class.java))
-                                    finish()
+                                    showThankYouDialog()
                                 } else {
                                     Log.e("SignupActivity", "Failed to write user data to database", dbTask.exception)
                                     Toast.makeText(this, "Database Error: ${dbTask.exception?.message}", Toast.LENGTH_LONG).show()
@@ -76,5 +75,17 @@ class SignupActivity : AppCompatActivity() {
         binding.tvLogin.setOnClickListener {
             finish()
         }
+    }
+
+    private fun showThankYouDialog() {
+        MaterialAlertDialogBuilder(this)
+            .setTitle("Welcome to Electrocart!")
+            .setMessage("Thank you for creating an account. You can now log in to start shopping.")
+            .setPositiveButton("OK") { dialog, _ ->
+                dialog.dismiss()
+                startActivity(Intent(this, LoginActivity::class.java))
+                finish()
+            }
+            .show()
     }
 }
