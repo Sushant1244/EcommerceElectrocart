@@ -53,6 +53,7 @@ fun PaymentScreen() {
         bottomBar = {
             Button(
                 onClick = { 
+                    // Order is no longer saved to the database
                     Toast.makeText(context, "Order Placed!", Toast.LENGTH_SHORT).show()
                     CartRepository.clear()
                     val intent = Intent(context, DashboardActivity::class.java)

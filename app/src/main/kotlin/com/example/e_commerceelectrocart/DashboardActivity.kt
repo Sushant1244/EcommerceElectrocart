@@ -72,6 +72,7 @@ val quickLinks = listOf(
 fun MainScreen(startDestination: String = "HOME") {
     val initialSelection = when (startDestination) {
         "CART" -> 2
+        "MESSAGES" -> 1
         else -> 0
     }
     var selectedItem by remember { mutableStateOf(initialSelection) }
@@ -489,6 +490,7 @@ fun AccountScreen() {
     var user by remember { mutableStateOf<User?>(null) }
     val firebaseUser = FirebaseAuth.getInstance().currentUser
 
+    // Safely listen for user data and clean up the listener
     DisposableEffect(firebaseUser) {
         val listener = object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
@@ -498,11 +500,15 @@ fun AccountScreen() {
                     user = User(firebaseUser.uid, name, email)
                 }
             }
-            override fun onCancelled(error: DatabaseError) { /* Handle error */ }
+            override fun onCancelled(error: DatabaseError) {
+                // In a real app, you would log this error to a crash reporting service
+            }
         }
+
         firebaseUser?.uid?.let {
             FirebaseDatabase.getInstance().getReference("Users").child(it).addValueEventListener(listener)
         }
+
         onDispose {
             firebaseUser?.uid?.let {
                 FirebaseDatabase.getInstance().getReference("Users").child(it).removeEventListener(listener)
@@ -514,8 +520,7 @@ fun AccountScreen() {
     val activity = (LocalContext.current as? ComponentActivity)
 
     Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
-        val currentUser = user
-        if (currentUser != null) {
+        user?.let { currentUser ->
             // Profile Section
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Box(modifier = Modifier.size(80.dp).clip(CircleShape).background(Color.LightGray)) // Placeholder for profile pic
@@ -527,7 +532,7 @@ fun AccountScreen() {
             }
             Spacer(modifier = Modifier.height(32.dp))
             Divider()
-        } else {
+        } ?: Box(modifier = Modifier.fillMaxWidth().padding(32.dp), contentAlignment = Alignment.Center) {
              CircularProgressIndicator()
         }
 
