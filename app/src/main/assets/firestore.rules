@@ -1,0 +1,161 @@
+{
+  "rules": {
+    // Users collection - users can read/write their own profile, admins can read/write all
+    "users": {
+      "$userId": {
+        // Allow read if: user is the owner OR user is an admin
+        ".read": "auth != null && (auth.uid == $userId || data.child('role').val() == 'admin')",
+        
+        // Allow write if: user is the owner updating their own data OR user is an admin
+        // Cannot change own role
+        ".write": "auth != null && (auth.uid == $userId || root.child('users').child(auth.uid).child('role').val() == 'admin')",
+        
+        // Validate data structure
+        ".validate": "newData.hasChildren(['uid', 'name', 'email', 'role'])",
+        
+        // Validate specific fields
+        "uid": {
+          ".validate": "newData.val() == $userId"
+        },
+        "name": {
+          ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 100"
+        },
+        "email": {
+          ".validate": "newData.isString() && newData.val().matches('^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\\\.[A-Za-z]{2,}$')"
+        },
+        "role": {
+          // Only admin can set/change roles
+          ".validate": "!newData.exists() || root.child('users').child(auth.uid).child('role').val() == 'admin'"
+        }
+      }
+    },
+
+    // Products collection - public read, admin write only
+    "products": {
+      "$productId": {
+        // Anyone can read products
+        ".read": true,
+        
+        // Only admins can create/update/delete products
+        ".write": "root.child('users').child(auth.uid).child('role').val() == 'admin'",
+        
+        // Validate product data
+        ".validate": "newData.hasChildren(['name', 'price'])",
+        
+        "name": {
+          ".validate": "newData.isString() && newData.val().length >= 1"
+        },
+        "price": {
+          ".validate": "newData.isNumber() && newData.val() >= 0"
+        },
+        "stock": {
+          ".validate": "newData.isNumber() && newData.val() >= 0"
+        }
+      }
+    },
+
+    // Categories collection - public read, admin write
+    "categories": {
+      ".read": true,
+      "$categoryId": {
+        ".write": "root.child('users').child(auth.uid).child('role').val() == 'admin'"
+      }
+    },
+
+    // Orders - users can read their own orders, admins can read all
+    "orders": {
+      "$orderId": {
+        // Allow read: owner or admin
+        ".read": "auth != null && (data.child('userId').val() == auth.uid || root.child('users').child(auth.uid).child('role').val() == 'admin')",
+        
+        // Allow create for authenticated users
+        ".write": "auth != null && (!data.exists() || data.child('userId').val() == auth.uid || root.child('users').child(auth.uid).child('role').val() == 'admin')",
+        
+        // Validate order data
+        ".validate": "newData.hasChildren(['userId', 'items', 'total'])",
+        
+        "userId": {
+          // Cannot change userId of existing order
+          ".validate": "!data.exists() || data.val() == newData.val()"
+        },
+        "total": {
+          ".validate": "newData.isNumber() && newData.val() >= 0"
+        },
+        "items": {
+          ".validate": "newData.isArray()"
+        }
+      }
+    },
+
+    // Addresses - users can only access their own addresses
+    "addresses": {
+      "$addressId": {
+        // Allow read/write if user owns the address OR is admin
+        ".read": "auth != null && (data.child('userId').val() == auth.uid || root.child('users').child(auth.uid).child('role').val() == 'admin')",
+        ".write": "auth != null && (newData.child('userId').val() == auth.uid || root.child('users').child(auth.uid).child('role').val() == 'admin')"
+      }
+    },
+
+    // Cart - users can only access their own cart
+    "carts": {
+      "$userId": {
+        // Users can only access their own cart
+        ".read": "auth != null && auth.uid == $userId",
+        ".write": "auth != null && auth.uid == $userId",
+        
+        "items": {
+          "$itemId": {
+            ".validate": "newData.hasChildren(['productId', 'price', 'quantity'])"
+          }
+        }
+      }
+    },
+
+    // Reviews - anyone can read, only authenticated users can create
+    "reviews": {
+      "$reviewId": {
+        ".read": true,
+        ".write": "auth != null",
+        
+        "userId": {
+          ".validate": "newData.val() == auth.uid"
+        },
+        "rating": {
+          ".validate": "newData.isNumber() && newData.val() >= 1 && newData.val() <= 5"
+        }
+      }
+    },
+
+    // Notifications - users can only access their own notifications
+    "notifications": {
+      "$notificationId": {
+        ".read": "auth != null && (data.child('userId').val() == auth.uid || root.child('users').child(auth.uid).child('role').val() == 'admin')",
+        ".write": "auth != null && (newData.child('userId').val() == auth.uid || root.child('users').child(auth.uid).child('role').val() == 'admin')"
+      }
+    },
+
+    // Chats - participants can access their chats
+    "chats": {
+      "$chatId": {
+        ".read": "auth != null && data.child('participants').hasChild(auth.uid)",
+        ".write": "auth != null && newData.child('participants').hasChild(auth.uid)"
+      }
+    },
+
+    // Banners - public read, admin write
+    "banners": {
+      ".read": true,
+      "$bannerId": {
+        ".write": "root.child('users').child(auth.uid).child('role').val() == 'admin'"
+      }
+    },
+
+    // Coupons - public read, admin write
+    "coupons": {
+      "$couponId": {
+        ".read": true,
+        ".write": "root.child('users').child(auth.uid).child('role').val() == 'admin'"
+      }
+    }
+  }
+}

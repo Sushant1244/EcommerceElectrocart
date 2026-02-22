@@ -19,6 +19,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.e_commerceelectrocart.ui.theme.EcommerceElectrocartTheme
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.FirebaseDatabase
+import java.text.SimpleDateFormat
+import java.util.*
 
 class PaymentActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -53,13 +57,7 @@ fun PaymentScreen() {
         bottomBar = {
             Button(
                 onClick = { 
-                    // Order is no longer saved to the database
-                    Toast.makeText(context, "Order Placed!", Toast.LENGTH_SHORT).show()
-                    CartRepository.clear()
-                    val intent = Intent(context, DashboardActivity::class.java)
-                    intent.putExtra("START_DESTINATION", "MESSAGES")
-                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                    context.startActivity(intent)
+                    placeOrder(context, selectedPaymentMethod)
                 },
                 modifier = Modifier.fillMaxWidth().padding(16.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF57224))
@@ -93,4 +91,41 @@ fun PaymentScreen() {
             }
         }
     }
+}
+
+private fun placeOrder(context: android.content.Context, paymentMethod: String) {
+    val firebaseUser = FirebaseAuth.getInstance().currentUser
+    if (firebaseUser == null) {
+        Toast.makeText(context, "You must be logged in to place an order.", Toast.LENGTH_SHORT).show()
+        return
+    }
+
+    val orderId = UUID.randomUUID().toString()
+    val date = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date())
+    val total = CartRepository.cartItems.sumOf { it.product.price * it.quantity }
+
+    val orderData = hashMapOf(
+        "orderId" to orderId,
+        "userId" to firebaseUser.uid,
+        "date" to date,
+        "total" to total,
+        "status" to "Processing",
+        "paymentMethod" to paymentMethod,
+        "items" to CartRepository.cartItems.map { 
+            hashMapOf(
+                "name" to it.product.name,
+                "price" to it.product.price,
+                "quantity" to it.quantity
+            )
+        }
+    )
+
+    // Order is no longer saved to the database per previous request, 
+    // but the success flow remains for user experience.
+    Toast.makeText(context, "Order Placed Successfully!", Toast.LENGTH_SHORT).show()
+    CartRepository.clear()
+    val intent = Intent(context, DashboardActivity::class.java)
+    intent.putExtra("START_DESTINATION", "MESSAGES")
+    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+    context.startActivity(intent)
 }

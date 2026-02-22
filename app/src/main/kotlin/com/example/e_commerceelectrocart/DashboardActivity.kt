@@ -51,14 +51,6 @@ class DashboardActivity : ComponentActivity() {
     }
 }
 
-val productList = listOf(
-    Product("Smart Watch", R.drawable.product_watch, 199, 249, "A great smart watch with a lot of features."),
-    Product("Headphones", R.drawable.product_headphone, 249, 299, "High-quality headphones with noise cancellation."),
-    Product("Laptop", R.drawable.cat_laptop, 1299, 1499, "A powerful laptop for all your needs."),
-    Product("Phone", R.drawable.cat_phone, 899, 999, "A smartphone with a great camera."),
-    Product("Smart Watch 2", R.drawable.product_watch, 299, 349, "The latest smart watch with a new design."),
-)
-
 val quickLinks = listOf(
     QuickLink("Gems", Icons.Default.Star),
     QuickLink("Sale Live", Icons.Default.LocalOffer),
@@ -128,6 +120,7 @@ fun HomeScreen() {
 
 @Composable
 fun QuickLinksSection() {
+    val context = LocalContext.current
     LazyRow(
         modifier = Modifier
             .fillMaxWidth()
@@ -137,7 +130,17 @@ fun QuickLinksSection() {
         items(quickLinks) { link ->
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.padding(horizontal = 8.dp).clickable { /* Handle Quick Link Click */ }
+                modifier = Modifier.padding(horizontal = 8.dp).clickable { 
+                    val intent = when(link.name) {
+                        "Gems" -> Intent(context, GemsActivity::class.java)
+                        "Sale Live" -> Intent(context, SaleLiveActivity::class.java)
+                        "Choice" -> Intent(context, ChoiceActivity::class.java)
+                        "Freebie" -> Intent(context, FreebieActivity::class.java)
+                        "Free Delivery" -> Intent(context, FreeDeliveryActivity::class.java)
+                        else -> null
+                    }
+                    intent?.let { context.startActivity(it) }
+                }
             ) {
                 Icon(link.icon, contentDescription = link.name, tint = Color(0xFFF57224))
                 Text(link.name, fontSize = 10.sp, fontWeight = FontWeight.Medium, modifier = Modifier.widthIn(max = 60.dp))
@@ -264,55 +267,6 @@ fun DashboardTopBar(onCartClick: () -> Unit) {
         colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.White)
 
     )
-}
-
-/* ---------------- PRODUCT CARD ---------------- */
-
-@Composable
-fun ProductCard(product: Product) {
-    val context = LocalContext.current
-    Card(
-        modifier = Modifier
-            .width(150.dp)
-            .padding(end = 12.dp)
-            .clickable { 
-                val intent = Intent(context, ProductDetailActivity::class.java)
-                intent.putExtra("PRODUCT_NAME", product.name)
-                intent.putExtra("PRODUCT_PRICE", product.price)
-                intent.putExtra("PRODUCT_ORIGINAL_PRICE", product.originalPrice)
-                intent.putExtra("PRODUCT_IMAGE", product.image)
-                intent.putExtra("PRODUCT_DESCRIPTION", product.description)
-                context.startActivity(intent)
-             },
-        shape = RoundedCornerShape(8.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White)
-    ) {
-        Column {
-            Image(
-                painter = painterResource(id = product.image),
-                contentDescription = "Product",
-                modifier = Modifier.height(120.dp).fillMaxWidth(),
-                contentScale = ContentScale.Crop
-            )
-            Column(modifier = Modifier.padding(8.dp)) {
-                Text(text = product.name, fontWeight = FontWeight.Normal, fontSize = 14.sp, maxLines = 2)
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(text = "Rs. ${product.price}", color = Color(0xFFF57224), fontWeight = FontWeight.Bold)
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        text = "Rs. ${product.originalPrice}",
-                        textDecoration = TextDecoration.LineThrough,
-                        fontSize = 12.sp,
-                        color = Color.Gray
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    if (product.discount > 0) {
-                        Text("-${product.discount}%", fontSize = 12.sp, color = Color.Red)
-                    }
-                }
-            }
-        }
-    }
 }
 
 

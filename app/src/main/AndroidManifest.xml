@@ -3,6 +3,9 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.VIBRATE" />
 
     <application
         android:allowBackup="true"
@@ -142,7 +145,7 @@
         <activity
             android:name=".LoginActivity"
             android:exported="true"
-            android.label="@string/title_activity_login"
+            android:label="@string/title_activity_login"
             android:theme="@style/Theme.EcommerceElectrocart">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -155,6 +158,20 @@
             android:exported="false"
             android:label="@string/app_name"
             android:theme="@style/Theme.EcommerceElectrocart" />
+        
+        <!-- Firebase Messaging Service -->
+        <service
+            android:name=".service.FirebaseService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
+        
+        <!-- Firebase Messaging Default Notification Channel -->
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_channel_id"
+            android:value="order_notifications" />
     </application>
 
 </manifest>

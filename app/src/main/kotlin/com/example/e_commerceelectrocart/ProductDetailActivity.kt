@@ -7,6 +7,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -53,10 +54,12 @@ fun ProductDetailScreen(product: Product) {
     val context = LocalContext.current
     val activity = (LocalContext.current as? ComponentActivity)
     val sheetState = rememberModalBottomSheetState()
+    val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
     var showBottomSheet by remember { mutableStateOf(false) }
 
     Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
                 title = { Text("Product Details") },
@@ -96,7 +99,18 @@ fun ProductDetailScreen(product: Product) {
                     Button(
                         onClick = { 
                             CartRepository.add(product)
-                            Toast.makeText(context, "Added to Cart", Toast.LENGTH_SHORT).show() 
+                            scope.launch {
+                                val result = snackbarHostState.showSnackbar(
+                                    message = "Added to Cart",
+                                    actionLabel = "View Cart",
+                                    duration = SnackbarDuration.Short
+                                )
+                                if (result == SnackbarResult.ActionPerformed) {
+                                    val intent = Intent(context, DashboardActivity::class.java)
+                                    intent.putExtra("START_DESTINATION", "CART")
+                                    context.startActivity(intent)
+                                }
+                            }
                         },
                         modifier = Modifier.weight(1f).padding(start = 8.dp),
                         colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF57224))
