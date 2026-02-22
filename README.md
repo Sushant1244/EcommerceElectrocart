@@ -1,64 +1,299 @@
-# E-commerce Electrocart: Android E-commerce Application
+# Electrocart - E-commerce Mobile Application
 
-**E-commerce Electrocart** is a modern, full-featured e-commerce application for Android, built with the latest technologies. This project serves as a comprehensive example of how to build a real-world shopping app, from user authentication to product management and a complete checkout flow.
+A production-ready e-commerce mobile application built with Android (Kotlin) and Jetpack Compose, featuring Firebase integration for backend services.
 
-## Features
+## 📱 Features
 
-- **User Authentication**: Secure login and signup with email and password, including a separate, secure login for the admin panel.
-- **Modern UI**: A clean, professional, and responsive user interface built entirely with **Jetpack Compose**.
-- **Product Management**: A complete admin panel that allows for adding, editing, and deleting products.
-- **Shopping Cart**: A fully functional shopping cart that persists across the app.
-- **Checkout Flow**: A multi-step checkout process that includes shipping details and payment methods.
-- **Admin Panel**: A secure, role-based admin panel for managing products, orders, and users.
-- **Sales Analytics**: A dashboard for admins to view sales graphs and top-selling products.
+### Authentication & User Management
+- Email/Password authentication
+- Google Sign-In integration
+- Facebook Login integration
+- Password reset functionality
+- User profile management
+- Role-based access control (Admin, User, Vendor)
 
-## Tech Stack
+### Product Management
+- Product catalog with categories
+- Search and filtering capabilities
+- Product details with images and specifications
+- Product reviews and ratings
+- Featured products and flash sales
+- Real-time inventory tracking
 
-- **Kotlin**: The official, modern language for Android development.
-- **Jetpack Compose**: Android's modern, declarative UI toolkit.
-- **Firebase**: Used for authentication, real-time database, and cloud storage.
-- **Coil**: A lightweight and efficient image loading library.
-- **Material Design 3**: The latest design system for creating beautiful and consistent UIs.
+### Shopping Experience
+- Shopping cart with quantity management
+- Wishlist functionality
+- Multiple address management
+- Checkout process
+- Order tracking
+- Order history
 
-## Getting Started
+### Admin Dashboard
+- Sales analytics and reporting
+- Product management (CRUD operations)
+- Order management
+- User management
+- Category management
 
-To get this project up and running on your local machine, please follow these steps:
+### Notifications & Analytics
+- Push notifications for order updates
+- Promotional notifications
+- Firebase Analytics integration
+- Crash reporting with Firebase Crashlytics
 
-1.  **Clone the repository**:
-    ```
-    git clone https://github.com/your-username/E-commerceElectrocart.git
-    ```
-2.  **Open in Android Studio**: Open the project in the latest version of Android Studio.
-3.  **Firebase Setup**: This project requires a Firebase backend. To connect it, you will need to:
-    - Create a new project in the [Firebase Console](https://console.firebase.google.com/).
-    - Add an Android app to your Firebase project with the package name `com.example.e_commerceelectrocart`.
-    - Download the `google-services.json` file from your Firebase project settings and place it in the `app/` directory.
-    - In the Firebase console, enable **Email/Password** authentication.
-    - Set up the **Realtime Database** and use the following security rules to allow users to manage their own data:
-        ```json
-        {
-          "rules": {
-            "Users": {
-              "$uid": {
-                ".write": "$uid === auth.uid",
-                ".read": "$uid === auth.uid"
-              }
-            }
-          }
-        }
-        ```
+## 🏗️ Architecture
 
-4.  **Run the app**: Build and run the app on an emulator or a physical device.
+### Technology Stack
+- **Language**: Kotlin 1.9+
+- **UI Framework**: Jetpack Compose with Material 3
+- **Min SDK**: 26 (Android 8.0)
+- **Target SDK**: 36
 
-## Admin Panel
+### Architecture Pattern
+- **MVVM** (Model-View-ViewModel)
+- **Clean Architecture** with separation of concerns
+- **Hilt** for Dependency Injection
+- **Kotlin Coroutines & Flow** for async operations
+- **DataStore** for local preferences
 
-To access the admin panel, you must first create an admin user in your Firebase project with the following credentials:
+### Project Structure
+```
+app/src/main/kotlin/com/example/e_commerceelectrocart/
+├── firebase/          # Firebase managers (Auth, Storage, Analytics)
+├── firestore/         # Firestore data models
+├── repository/        # Data repositories (Product, Order, User)
+├── di/                # Hilt dependency injection modules
+├── service/           # Background services (FCM)
+├── local/             # Local storage (DataStore)
+├── ui/                # Compose UI theme
+└── *.kt               # Activities and UI components
+```
 
--   **Email**: `admin@electrocart.com`
--   **Password**: `admin123`
+## 🔥 Firebase Services
 
-Once you've created this user, you can log in with these credentials to access the admin dashboard.
+### 1. Firebase Authentication
+- Email/Password authentication
+- Google Sign-In
+- Facebook Login
+- Email verification
+- Password reset
 
-## Contributing
+### 2. Cloud Firestore (NoSQL)
+- Real-time data synchronization
+- Offline support
+- Scalable database structure
+- Collections: `users`, `products`, `orders`, `categories`, `addresses`, `notifications`, `reviews`
 
-Contributions are welcome! If you have any ideas, suggestions, or bug reports, please feel free to open an issue or submit a pull request.
+### 3. Firebase Realtime Database
+- User profile data
+- Real-time cart sync
+- Chat/messaging
+
+### 4. Firebase Storage
+- Product images
+- User profile photos
+- Banner images
+- Review images
+
+### 5. Firebase Cloud Functions
+- Order confirmation emails
+- Inventory management
+- Coupon validation
+- Push notifications
+- Scheduled cleanup tasks
+
+### 6. Firebase Cloud Messaging
+- Order status notifications
+- Promotional notifications
+- Custom notification channels
+
+### 7. Firebase Analytics
+- User behavior tracking
+- Custom events
+- User properties
+- Conversion tracking
+
+### 8. Firebase Crashlytics
+- Crash reporting
+- Non-fatal exception logging
+
+## 🔒 Security
+
+### Firestore Security Rules
+- Role-based access control
+- Users can only access their own data
+- Admins have full access
+- Data validation on write operations
+
+### Storage Security Rules
+- Image upload validation (size, type)
+- User-specific profile access
+- Admin-only product management
+
+### Authentication Security
+- Email verification required
+- Password strength validation
+- Session management
+- FCM token management
+
+## 📋 Firebase Security Rules Summary
+
+```javascript
+// Users - Own profile + Admin access
+// Products - Public read, Admin write
+// Orders - Owner + Admin access
+// Addresses - Owner access only
+// Cart - Owner access only
+// Reviews - Authenticated users
+```
+
+## 🚀 Getting Started
+
+### Prerequisites
+- Android Studio Arctic Fox or later
+- JDK 11 or later
+- Firebase project with enabled services
+
+### Setup Steps
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/your-repo/EcommerceElectrocart.git
+   ```
+
+2. **Create Firebase Project**
+   - Go to Firebase Console
+   - Create new project
+   - Enable Authentication, Firestore, Realtime Database, Storage, Cloud Functions, Analytics, Crashlytics, Cloud Messaging
+
+3. **Add Google Services**
+   - Download `google-services.json` from Firebase Console
+   - Place in `app/google-services.json`
+
+4. **Configure OAuth Providers**
+   - Set up Google Sign-In in Firebase Console
+   - Set up Facebook Login in Firebase Console
+
+5. **Build the project**
+   ```bash
+   ./gradlew assembleDebug
+   ```
+
+6. **Deploy Cloud Functions**
+   ```bash
+   cd functions
+   npm install
+   firebase deploy --only functions
+   ```
+
+7. **Deploy Security Rules**
+   ```bash
+   firebase deploy --only firestore:rules
+   firebase deploy --only storage:rules
+   ```
+
+### Environment Variables
+Create `local.properties`:
+```properties
+sdk.dir=/path/to/android/sdk
+```
+
+## 📂 Key Files
+
+| File | Description |
+|------|-------------|
+| [`app/build.gradle.kts`](app/build.gradle.kts) | Dependencies and build configuration |
+| [`app/src/main/kotlin/.../firebase/FirebaseManager.kt`](app/src/main/kotlin/com/example/e_commerceelectrocart/firebase/FirebaseManager.kt) | Central Firebase operations |
+| [`app/src/main/kotlin/.../firebase/AuthManager.kt`](app/src/main/kotlin/com/example/e_commerceelectrocart/firebase/AuthManager.kt) | Authentication handling |
+| [`app/src/main/kotlin/.../repository/ProductRepository.kt`](app/src/main/kotlin/com/example/e_commerceelectrocart/repository/ProductRepository.kt) | Product CRUD operations |
+| [`app/src/main/kotlin/.../repository/OrderRepository.kt`](app/src/main/kotlin/com/example/e_commerceelectrocart/repository/OrderRepository.kt) | Order management |
+| [`app/src/main/kotlin/.../firestore/Models.kt`](app/src/main/kotlin/com/example/e_commerceelectrocart/firestore/Models.kt) | Data models |
+| [`app/src/main/assets/firestore.rules`](app/src/main/assets/firestore.rules) | Firestore security rules |
+| [`app/src/main/assets/storage.rules`](app/src/main/assets/storage.rules) | Storage security rules |
+| [`app/src/main/assets/cloud-functions.md`](app/src/main/assets/cloud-functions.md) | Cloud Functions code |
+
+## 🔧 Configuration
+
+### Admin Setup
+Default admin email: `admin@electrocart.com`
+
+To create an admin:
+1. Register a new user
+2. Manually update the user's role to `admin` in Firestore
+
+### Payment Methods
+Currently supports:
+- Cash on Delivery (COD)
+- Credit/Debit Cards (Ready for integration)
+- UPI (Ready for integration)
+- Net Banking (Ready for integration)
+
+### Shipping
+- Free shipping on orders above ₹499
+- Standard shipping: ₹49
+
+## 📊 Analytics Events
+
+| Event | Description |
+|-------|-------------|
+| `sign_up` | User registration |
+| `login` | User login |
+| `logout` | User logout |
+| `add_to_cart` | Product added to cart |
+| `remove_from_cart` | Product removed from cart |
+| `begin_checkout` | Checkout started |
+| `purchase` | Order completed |
+| `order_status_updated` | Order status changed |
+| `product_viewed` | Product details viewed |
+| `search` | Product search |
+
+## 🔔 Push Notification Types
+
+| Type | Channel | Description |
+|------|---------|-------------|
+| `order_status` | Order Updates | Order status changes |
+| `promo` | Promotions | Deals and offers |
+| `product` | General | Product updates |
+| `chat` | General | New messages |
+
+## 📱 Screenshots
+
+The app includes the following screens:
+- Login/Signup with social options
+- Dashboard with categories and deals
+- Product listing and details
+- Shopping cart
+- Checkout and payment
+- Order tracking
+- User profile
+- Admin dashboard
+- Analytics view
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## 📄 License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## 🙏 Acknowledgments
+
+- Firebase team for excellent documentation
+- Jetpack Compose community
+- Material Design guidelines
+
+## 📞 Support
+
+For issues and questions:
+- Open an issue on GitHub
+- Email: support@electrocart.com
+
+---
+
+**Version**: 1.0.0  
+**Last Updated**: 2026-02-22
