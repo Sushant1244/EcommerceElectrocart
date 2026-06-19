@@ -36,9 +36,11 @@ import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
+import dagger.hilt.android.AndroidEntryPoint
 
 data class QuickLink(val name: String, val icon: androidx.compose.ui.graphics.vector.ImageVector)
 
+@AndroidEntryPoint
 class DashboardActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -192,7 +194,6 @@ fun WelcomeBanner() {
 
 @Composable
 fun MegaDealsBanner() {
-    val context = LocalContext.current
     Image(
         painter = painterResource(id = R.drawable.offer_banner),
         contentDescription = "Mega Deals",
@@ -201,7 +202,6 @@ fun MegaDealsBanner() {
             .fillMaxWidth()
             .padding(horizontal = 12.dp, vertical = 8.dp)
             .clip(RoundedCornerShape(12.dp))
-            .clickable { Toast.makeText(context, "Mega Deals Banner Clicked", Toast.LENGTH_SHORT).show() }
     )
 }
 
@@ -225,7 +225,7 @@ fun FlashSaleSection() {
                 }
             }
             Spacer(modifier = Modifier.weight(1f))
-            Text("SHOP MORE >", fontSize = 12.sp, color = Color(0xFFF57224), fontWeight = FontWeight.Bold, modifier = Modifier.clickable { /* Handle Shop More Click */ })
+            Text("SHOP MORE >", fontSize = 12.sp, color = Color(0xFFF57224), fontWeight = FontWeight.Bold)
         }
         Spacer(modifier = Modifier.height(8.dp))
         LazyRow {
@@ -252,10 +252,11 @@ fun DashboardTopBar(onCartClick: () -> Unit) {
                 placeholder = { Text("Search...") },
                 modifier = Modifier.fillMaxWidth().height(50.dp),
                 shape = RoundedCornerShape(25.dp),
-                colors = TextFieldDefaults.outlinedTextFieldColors(
+                colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = Color.Transparent,
                     unfocusedBorderColor = Color.Transparent,
-                    containerColor = Color(0xFFF5F5F5)
+                    focusedContainerColor = Color(0xFFF5F5F5),
+                    unfocusedContainerColor = Color(0xFFF5F5F5)
                 )
             )
         },
@@ -290,7 +291,7 @@ fun MessagesScreen() {
                     Text(lastMessage, color = Color.Gray, fontSize = 14.sp)
                 }
             }
-            Divider()
+            HorizontalDivider()
         }
     }
 }
@@ -299,7 +300,6 @@ fun MessagesScreen() {
 @Composable
 fun CartScreen(cartItems: MutableList<CartItem>) {
     val context = LocalContext.current
-    var allChecked by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -313,9 +313,8 @@ fun CartScreen(cartItems: MutableList<CartItem>) {
             )
         },
         bottomBar = {
-            CheckoutBar(cartItems, allChecked) { 
+            CheckoutBar(cartItems, false) { 
                 val intent = Intent(context, CheckoutActivity::class.java)
-                 // In a real app, you'd pass all selected items
                  if(cartItems.isNotEmpty()){
                     intent.putExtra("PRODUCT_NAME", cartItems[0].product.name)
                     intent.putExtra("PRODUCT_PRICE", cartItems[0].product.price)
@@ -336,7 +335,6 @@ fun CartScreen(cartItems: MutableList<CartItem>) {
                     .fillMaxSize()
                     .background(Color(0xFFF5F5F5))
             ) {
-                // Group by a dummy vendor for now
                 item {
                     VendorHeader()
                 }
@@ -412,7 +410,7 @@ fun CartListItem(item: CartItem, isChecked: Boolean, onCheckedChange: (Boolean) 
 
 @Composable
 fun CheckoutBar(cartItems: List<CartItem>, isAllChecked: Boolean, onCheckout: () -> Unit) {
-    val totalPrice = cartItems.filter { true }.sumOf { it.product.price * it.quantity } // simplified logic
+    val totalPrice = cartItems.sumOf { it.product.price * it.quantity } 
     var allChecked by remember { mutableStateOf(isAllChecked) }
 
     Surface(
@@ -428,7 +426,7 @@ fun CheckoutBar(cartItems: List<CartItem>, isAllChecked: Boolean, onCheckout: ()
             Spacer(modifier = Modifier.weight(1f))
             Column(horizontalAlignment = Alignment.End) {
                 Text("Subtotal: Rs. $totalPrice", fontSize = 16.sp, fontWeight = FontWeight.Bold)
-                Text("Shipping Fee: Rs. 143", fontSize = 12.sp, color = Color.Gray) // Dummy value
+                Text("Shipping Fee: Rs. 143", fontSize = 12.sp, color = Color.Gray) 
             }
             Spacer(modifier = Modifier.width(16.dp))
             Button(onClick = onCheckout, colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF57224))) {
@@ -444,40 +442,53 @@ fun AccountScreen() {
     var user by remember { mutableStateOf<User?>(null) }
     val firebaseUser = FirebaseAuth.getInstance().currentUser
 
-    // Safely listen for user data and clean up the listener
     DisposableEffect(firebaseUser) {
-        val listener = object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                val name = snapshot.child("name").getValue(String::class.java)
-                val email = snapshot.child("email").getValue(String::class.java)
-                if (name != null && email != null && firebaseUser != null) {
-                    user = User(firebaseUser.uid, name, email)
+        if (firebaseUser == null) {
+            onDispose { }
+        } else {
+            val listener = object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    try {
+                        val name = snapshot.child("name").getValue(String::class.java)
+                        val email = snapshot.child("email").getValue(String::class.java)
+                        if (name != null && email != null && firebaseUser != null) {
+                            user = User(firebaseUser.uid, name, email)
+                        }
+                    } catch (e: Exception) {
+                        // ignore
+                    }
+                }
+                override fun onCancelled(error: DatabaseError) {
+                    // ignore
                 }
             }
-            override fun onCancelled(error: DatabaseError) {
-                // In a real app, you would log this error to a crash reporting service
+
+            try {
+                FirebaseDatabase.getInstance().getReference("Users").child(firebaseUser.uid).addValueEventListener(listener)
+            } catch (e: Exception) {
+                // ignore
             }
-        }
 
-        firebaseUser?.uid?.let {
-            FirebaseDatabase.getInstance().getReference("Users").child(it).addValueEventListener(listener)
-        }
-
-        onDispose {
-            firebaseUser?.uid?.let {
-                FirebaseDatabase.getInstance().getReference("Users").child(it).removeEventListener(listener)
+            onDispose {
+                try {
+                    firebaseUser.uid.let {
+                        FirebaseDatabase.getInstance().getReference("Users").child(it).removeEventListener(listener)
+                    }
+                } catch (e: Exception) {
+                    // ignore
+                }
             }
         }
     }
 
     val context = LocalContext.current
-    val activity = (LocalContext.current as? ComponentActivity)
+    val activity = (context as? ComponentActivity)
 
     Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
         user?.let { currentUser ->
             // Profile Section
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Box(modifier = Modifier.size(80.dp).clip(CircleShape).background(Color.LightGray)) // Placeholder for profile pic
+                Box(modifier = Modifier.size(80.dp).clip(CircleShape).background(Color.LightGray)) 
                 Spacer(modifier = Modifier.width(16.dp))
                 Column {
                     Text(currentUser.name, fontWeight = FontWeight.Bold, fontSize = 24.sp)
@@ -485,7 +496,7 @@ fun AccountScreen() {
                 }
             }
             Spacer(modifier = Modifier.height(32.dp))
-            Divider()
+            HorizontalDivider()
         } ?: Box(modifier = Modifier.fillMaxWidth().padding(32.dp), contentAlignment = Alignment.Center) {
              CircularProgressIndicator()
         }
@@ -499,8 +510,16 @@ fun AccountScreen() {
         // Logout Button
         Button(
             onClick = {
-                FirebaseAuth.getInstance().signOut()
-                LoginManager.getInstance().logOut()
+                try {
+                    FirebaseAuth.getInstance().signOut()
+                    LoginManager.getInstance().logOut()
+                } catch (e: Exception) {
+                    try {
+                        FirebaseAuth.getInstance().signOut()
+                    } catch (e2: Exception) {
+                        // ignore
+                    }
+                }
                 CartRepository.clear()
                 val intent = Intent(context, LoginActivity::class.java)
                 intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
@@ -527,4 +546,3 @@ fun ProfileMenuItem(text: String, icon: androidx.compose.ui.graphics.vector.Imag
         Icon(Icons.Default.ArrowForwardIos, contentDescription = null, tint = Color.Gray)
     }
 }
-

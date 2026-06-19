@@ -9,14 +9,15 @@ import com.example.e_commerceelectrocart.databinding.ActivityLoginBinding
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.FirebaseAuthInvalidUserException
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class LoginActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityLoginBinding
     private lateinit var firebaseAuth: FirebaseAuth
 
     private val adminEmail = "admin@electrocart.com"
-    private val TAG = "AdminLoginCheck"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -50,7 +51,6 @@ class LoginActivity : AppCompatActivity() {
                     finish()
                 } else {
                     val exception = it.exception
-                    Log.e(TAG, "Login failed in onComplete listener", exception)
                     when (exception) {
                         is FirebaseAuthInvalidUserException -> {
                             Toast.makeText(this, "Login failed: No account found with this email.", Toast.LENGTH_LONG).show()
