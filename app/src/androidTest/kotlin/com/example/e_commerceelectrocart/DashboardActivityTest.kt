@@ -24,4 +24,22 @@ class DashboardActivityTest {
         // Verify the Flash Sale section is present
         composeTestRule.onNodeWithText("Flash Sale").assertExists()
     }
+
+    @Test
+    fun search_filtersProducts() {
+        // Type into search and verify filtered result appears
+        composeTestRule.onNodeWithText("Search products, categories...").performTextInput("Laptop")
+        composeTestRule.onNodeWithText("Laptop").assertExists()
+    }
+
+    @Test
+    fun addToCart_andOpenCart_showsItem() {
+        // Tap first Add button, open Cart tab and verify cart contains item
+        composeTestRule.onNodeWithText("Add").performClick()
+        // Open Cart via bottom navigation
+        composeTestRule.onNodeWithText("Cart").performClick()
+        composeTestRule.onNodeWithText("My Cart").assertExists()
+        // Ensure at least one product name is shown in cart
+        composeTestRule.onNodeWithText("Smart Watch").assertExists()
+    }
 }

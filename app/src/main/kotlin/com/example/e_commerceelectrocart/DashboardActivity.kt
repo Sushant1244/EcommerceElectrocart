@@ -36,7 +36,9 @@ import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
+import com.google.firebase.firestore.FirebaseFirestore
 import dagger.hilt.android.AndroidEntryPoint
+import com.example.e_commerceelectrocart.firestore.ProductRepository
 
 data class QuickLink(val name: String, val icon: androidx.compose.ui.graphics.vector.ImageVector)
 
@@ -44,12 +46,19 @@ data class QuickLink(val name: String, val icon: androidx.compose.ui.graphics.ve
 class DashboardActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // Start listening to Firestore products so UI stays live
+        ProductRepository.startListening()
         val startDestination = intent.getStringExtra("START_DESTINATION") ?: "HOME"
         setContent {
             EcommerceElectrocartTheme {
                 MainScreen(startDestination)
             }
         }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        ProductRepository.stopListening()
     }
 }
 
@@ -70,13 +79,14 @@ fun MainScreen(startDestination: String = "HOME") {
         else -> 0
     }
     var selectedItem by remember { mutableStateOf(initialSelection) }
+    var searchText by remember { mutableStateOf("") }
     val items = listOf("Home", "Messages", "Cart", "Account")
     val icons = listOf(Icons.Default.Home, Icons.Default.MailOutline, Icons.Default.ShoppingCart, Icons.Default.Person)
 
     Scaffold(
-        topBar = { 
-            if(selectedItem != 2) { // Hide top bar on Cart screen
-                DashboardTopBar(onCartClick = { selectedItem = 2 }) 
+        topBar = {
+            if (selectedItem != 2) { // Hide top bar on Cart screen
+                DashboardTopBar(searchText = searchText, onSearchChange = { searchText = it }, onCartClick = { selectedItem = 2 })
             }
         },
         bottomBar = {
@@ -94,7 +104,7 @@ fun MainScreen(startDestination: String = "HOME") {
     ) { padding ->
         Box(modifier = Modifier.padding(padding)) {
             when (selectedItem) {
-                0 -> HomeScreen()
+                0 -> HomeScreen(searchText)
                 1 -> MessagesScreen()
                 2 -> CartScreen(CartRepository.cartItems)
                 3 -> AccountScreen()
@@ -104,7 +114,7 @@ fun MainScreen(startDestination: String = "HOME") {
 }
 
 @Composable
-fun HomeScreen() {
+fun HomeScreen(searchQuery: String = "") {
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -113,7 +123,35 @@ fun HomeScreen() {
         item { QuickLinksSection() }
         item { WelcomeBanner() }
         item { MegaDealsBanner() }
-        item { FlashSaleSection() }
+        item { FlashSaleSection(searchQuery) }
+        item { CategoriesSection() }
+        item { ProductGrid(searchQuery) }
+    }
+}
+
+@Composable
+fun CategoriesSection() {
+    val categories = listOf("Electronics", "Fashion", "Home", "Beauty", "Toys")
+    LazyRow(modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)) {
+        items(categories) { cat ->
+            Card(shape = RoundedCornerShape(20.dp), colors = CardDefaults.cardColors(containerColor = Color.White), modifier = Modifier.padding(end = 8.dp)) {
+                Text(cat, modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp), fontWeight = FontWeight.Medium)
+            }
+        }
+    }
+}
+
+@Composable
+fun ProductGrid(searchQuery: String = "") {
+    val source = com.example.e_commerceelectrocart.firestore.ProductRepository.products
+    val filtered = if (searchQuery.isBlank()) source else source.filter { it.name.contains(searchQuery, true) }
+    Column(modifier = Modifier.padding(12.dp)) {
+        Text("Recommended", fontWeight = FontWeight.Bold, fontSize = 18.sp, modifier = Modifier.padding(bottom = 8.dp))
+        LazyRow {
+            items(filtered) { product ->
+                ProductCard(product)
+            }
+        }
     }
 }
 
@@ -206,7 +244,10 @@ fun MegaDealsBanner() {
 }
 
 @Composable
-fun FlashSaleSection() {
+fun FlashSaleSection(searchQuery: String = "") {
+    val source = com.example.e_commerceelectrocart.firestore.ProductRepository.products
+    val filtered = if (searchQuery.isBlank()) source.shuffled() else source.filter { it.name.contains(searchQuery, true) }
+
     Column(modifier = Modifier.padding(12.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text("Flash Sale", fontSize = 20.sp, fontWeight = FontWeight.Bold)
@@ -229,7 +270,7 @@ fun FlashSaleSection() {
         }
         Spacer(modifier = Modifier.height(8.dp))
         LazyRow {
-            items(productList.shuffled()) { product ->
+            items(filtered) { product ->
                 ProductCard(product)
             }
         }
@@ -241,22 +282,21 @@ fun FlashSaleSection() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DashboardTopBar(onCartClick: () -> Unit) {
-    var searchText by remember { mutableStateOf("") }
+fun DashboardTopBar(searchText: String, onSearchChange: (String) -> Unit, onCartClick: () -> Unit) {
     TopAppBar(
         title = {
             OutlinedTextField(
                 value = searchText,
-                onValueChange = { searchText = it },
+                onValueChange = { onSearchChange(it) },
                 leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Search Icon") },
-                placeholder = { Text("Search...") },
-                modifier = Modifier.fillMaxWidth().height(50.dp),
-                shape = RoundedCornerShape(25.dp),
+                placeholder = { Text("Search products, categories...") },
+                modifier = Modifier.fillMaxWidth().height(48.dp),
+                shape = RoundedCornerShape(24.dp),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = Color.Transparent,
                     unfocusedBorderColor = Color.Transparent,
-                    focusedContainerColor = Color(0xFFF5F5F5),
-                    unfocusedContainerColor = Color(0xFFF5F5F5)
+                    focusedContainerColor = Color(0xFFF2F3F5),
+                    unfocusedContainerColor = Color(0xFFF2F3F5)
                 )
             )
         },
@@ -264,9 +304,15 @@ fun DashboardTopBar(onCartClick: () -> Unit) {
             IconButton(onClick = onCartClick) {
                 Icon(Icons.Default.ShoppingCart, contentDescription = "Cart")
             }
+            IconButton(onClick = { /* TODO: Notifications */ }) {
+                Icon(Icons.Default.Notifications, contentDescription = "Notifications")
+            }
+            IconButton(onClick = { /* TODO: Profile */ }) {
+                Icon(Icons.Default.Person, contentDescription = "Profile")
+            }
         },
-        colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.White)
-
+        colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.White),
+        modifier = Modifier.fillMaxWidth()
     )
 }
 
@@ -441,39 +487,28 @@ fun CheckoutBar(cartItems: List<CartItem>, isAllChecked: Boolean, onCheckout: ()
 fun AccountScreen() {
     var user by remember { mutableStateOf<User?>(null) }
     val firebaseUser = FirebaseAuth.getInstance().currentUser
+    var showLogoutDialog by remember { mutableStateOf(false) }
 
     DisposableEffect(firebaseUser) {
         if (firebaseUser == null) {
             onDispose { }
         } else {
-            val listener = object : ValueEventListener {
-                override fun onDataChange(snapshot: DataSnapshot) {
-                    try {
-                        val name = snapshot.child("name").getValue(String::class.java)
-                        val email = snapshot.child("email").getValue(String::class.java)
-                        if (name != null && email != null && firebaseUser != null) {
-                            user = User(firebaseUser.uid, name, email)
-                        }
-                    } catch (e: Exception) {
-                        // ignore
-                    }
-                }
-                override fun onCancelled(error: DatabaseError) {
+            val firestore = FirebaseFirestore.getInstance()
+            val docRef = firestore.collection("Users").document(firebaseUser.uid)
+            val registration = docRef.addSnapshotListener { snapshot, error ->
+                if (error != null) return@addSnapshotListener
+                try {
+                    val name = snapshot?.getString("name") ?: firebaseUser.displayName ?: "User"
+                    val email = snapshot?.getString("email") ?: firebaseUser.email ?: ""
+                    user = User(firebaseUser.uid, name, email)
+                } catch (e: Exception) {
                     // ignore
                 }
             }
 
-            try {
-                FirebaseDatabase.getInstance().getReference("Users").child(firebaseUser.uid).addValueEventListener(listener)
-            } catch (e: Exception) {
-                // ignore
-            }
-
             onDispose {
                 try {
-                    firebaseUser.uid.let {
-                        FirebaseDatabase.getInstance().getReference("Users").child(it).removeEventListener(listener)
-                    }
+                    registration.remove()
                 } catch (e: Exception) {
                     // ignore
                 }
@@ -507,31 +542,42 @@ fun AccountScreen() {
         ProfileMenuItem(text = "Settings", icon = Icons.Default.Settings) { context.startActivity(Intent(context, SettingsActivity::class.java)) }
         Spacer(modifier = Modifier.weight(1f))
 
-        // Logout Button
+        // Logout Button (with confirmation)
         Button(
-            onClick = {
-                try {
-                    FirebaseAuth.getInstance().signOut()
-                    LoginManager.getInstance().logOut()
-                } catch (e: Exception) {
-                    try {
-                        FirebaseAuth.getInstance().signOut()
-                    } catch (e2: Exception) {
-                        // ignore
-                    }
-                }
-                CartRepository.clear()
-                val intent = Intent(context, LoginActivity::class.java)
-                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                context.startActivity(intent)
-                activity?.finish()
-            },
+            onClick = { showLogoutDialog = true },
             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF57224)),
             modifier = Modifier.fillMaxWidth()
         ) {
             Icon(Icons.Default.ExitToApp, contentDescription = "Logout")
             Spacer(modifier = Modifier.width(8.dp))
             Text("Logout")
+        }
+
+        if (showLogoutDialog) {
+            AlertDialog(
+                onDismissRequest = { showLogoutDialog = false },
+                title = { Text("Confirm Logout") },
+                text = { Text("Are you sure you want to logout?") },
+                confirmButton = {
+                    TextButton(onClick = {
+                        showLogoutDialog = false
+                        try {
+                            FirebaseAuth.getInstance().signOut()
+                            LoginManager.getInstance().logOut()
+                        } catch (e: Exception) {
+                            try { FirebaseAuth.getInstance().signOut() } catch (ignored: Exception) {}
+                        }
+                        CartRepository.clear()
+                        val intent = Intent(context, LoginActivity::class.java)
+                        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                        context.startActivity(intent)
+                        activity?.finish()
+                    }) { Text("Logout") }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showLogoutDialog = false }) { Text("Cancel") }
+                }
+            )
         }
     }
 }

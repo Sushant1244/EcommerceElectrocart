@@ -12,6 +12,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import android.widget.Toast
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -78,17 +79,32 @@ fun ProductCard(product: Product) {
             Column(modifier = Modifier.padding(8.dp)) {
                 Text(text = product.name, fontWeight = FontWeight.Normal, fontSize = 14.sp, maxLines = 2)
                 Spacer(modifier = Modifier.height(4.dp))
-                Text(text = "Rs. ${product.price}", color = Color(0xFFF57224), fontWeight = FontWeight.Bold)
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        text = "Rs. ${product.originalPrice}",
-                        textDecoration = TextDecoration.LineThrough,
-                        fontSize = 12.sp,
-                        color = Color.Gray
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    if (product.discount > 0) {
-                        Text("-${product.discount}%", fontSize = 12.sp, color = Color.Red)
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
+                    Column {
+                        Text(text = "Rs. ${product.price}", color = Color(0xFFF57224), fontWeight = FontWeight.Bold)
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                text = "Rs. ${product.originalPrice}",
+                                textDecoration = TextDecoration.LineThrough,
+                                fontSize = 12.sp,
+                                color = Color.Gray
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            if (product.discount > 0) {
+                                Text("-${product.discount}%", fontSize = 12.sp, color = Color.Red)
+                            }
+                        }
+                    }
+                    // Add to cart button
+                    Button(
+                        onClick = {
+                            CartRepository.add(product)
+                            Toast.makeText(context, "Added to cart", Toast.LENGTH_SHORT).show()
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0F9D58)),
+                        modifier = Modifier.height(36.dp)
+                    ) {
+                        Text("Add")
                     }
                 }
             }
