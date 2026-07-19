@@ -118,24 +118,162 @@ fun HomeScreen(searchQuery: String = "") {
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFF5F5F5))
+            .background(Color(0xFFF2F5F9))
     ) {
+        item { HomeHeroSection() }
         item { QuickLinksSection() }
-        item { WelcomeBanner() }
-        item { MegaDealsBanner() }
-        item { FlashSaleSection(searchQuery) }
         item { CategoriesSection() }
+        item { FlashSaleSection(searchQuery) }
         item { ProductGrid(searchQuery) }
+    }
+}
+
+@Composable
+fun HomeHeroSection() {
+    Card(
+        modifier = Modifier
+            .padding(horizontal = 12.dp, vertical = 12.dp)
+            .fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(20.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    "Discover premium deals",
+                    fontSize = 22.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF102A43)
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    "Explore curated offers and shop the best products with faster delivery.",
+                    fontSize = 14.sp,
+                    color = Color(0xFF52606D),
+                    lineHeight = 20.sp
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                Button(
+                    onClick = { /* TODO: Navigate to deals */ },
+                    shape = RoundedCornerShape(16.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0F9D58))
+                ) {
+                    Text("Shop Now", color = Color.White)
+                }
+            }
+            Spacer(modifier = Modifier.width(16.dp))
+            Card(
+                modifier = Modifier.size(110.dp),
+                shape = RoundedCornerShape(20.dp),
+                colors = CardDefaults.cardColors(containerColor = Color(0xFFEFF7FF))
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    Image(
+                        painter = painterResource(id = R.drawable.offer_banner),
+                        contentDescription = "Hero Offer",
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun QuickLinksSection() {
+    val context = LocalContext.current
+    LazyRow(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(start = 12.dp, end = 12.dp, bottom = 12.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        items(quickLinks) { link ->
+            Card(
+                modifier = Modifier
+                    .size(width = 130.dp, height = 110.dp)
+                    .clickable {
+                        val intent = when (link.name) {
+                            "Gems" -> Intent(context, GemsActivity::class.java)
+                            "Sale Live" -> Intent(context, SaleLiveActivity::class.java)
+                            "Choice" -> Intent(context, ChoiceActivity::class.java)
+                            "Freebie" -> Intent(context, FreebieActivity::class.java)
+                            "Free Delivery" -> Intent(context, FreeDeliveryActivity::class.java)
+                            else -> null
+                        }
+                        intent?.let { context.startActivity(it) }
+                    },
+                shape = RoundedCornerShape(18.dp),
+                colors = CardDefaults.cardColors(containerColor = Color.White),
+                elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(14.dp),
+                    horizontalAlignment = Alignment.Start,
+                    verticalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(32.dp)
+                            .clip(RoundedCornerShape(10.dp))
+                            .background(Color(0xFFF4F7FF)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(link.icon, contentDescription = link.name, tint = Color(0xFF0F9D58))
+                    }
+                    Text(link.name, fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFF102A43))
+                }
+            }
+        }
     }
 }
 
 @Composable
 fun CategoriesSection() {
     val categories = listOf("Electronics", "Fashion", "Home", "Beauty", "Toys")
-    LazyRow(modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)) {
-        items(categories) { cat ->
-            Card(shape = RoundedCornerShape(20.dp), colors = CardDefaults.cardColors(containerColor = Color.White), modifier = Modifier.padding(end = 8.dp)) {
-                Text(cat, modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp), fontWeight = FontWeight.Medium)
+    Column(modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)) {
+        Text("Top Categories", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color(0xFF102A43))
+        Spacer(modifier = Modifier.height(10.dp))
+        LazyRow(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            items(categories) { cat ->
+                Surface(
+                    shape = RoundedCornerShape(20.dp),
+                    color = Color.White,
+                    shadowElevation = 3.dp,
+                    modifier = Modifier.clickable { /* TODO: Filter by category */ }
+                ) {
+                    Text(
+                        cat,
+                        modifier = Modifier.padding(horizontal = 18.dp, vertical = 12.dp),
+                        fontWeight = FontWeight.Medium,
+                        color = Color(0xFF334E68)
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun FlashSaleSection(searchQuery: String = "") {
+    val source = com.example.e_commerceelectrocart.firestore.ProductRepository.products
+    val filtered = if (searchQuery.isBlank()) source.shuffled() else source.filter { it.name.contains(searchQuery, true) }
+
+    Column(modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)) {
+        SectionHeader(title = "Flash Sale", actionText = "View All") { /* TODO */ }
+        Spacer(modifier = Modifier.height(8.dp))
+        LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            items(filtered.take(5)) { product ->
+                ProductCard(product)
             }
         }
     }
@@ -145,135 +283,33 @@ fun CategoriesSection() {
 fun ProductGrid(searchQuery: String = "") {
     val source = com.example.e_commerceelectrocart.firestore.ProductRepository.products
     val filtered = if (searchQuery.isBlank()) source else source.filter { it.name.contains(searchQuery, true) }
-    Column(modifier = Modifier.padding(12.dp)) {
-        Text("Recommended", fontWeight = FontWeight.Bold, fontSize = 18.sp, modifier = Modifier.padding(bottom = 8.dp))
-        LazyRow {
-            items(filtered) { product ->
-                ProductCard(product)
-            }
-        }
-    }
-}
 
-
-/* ---------------- SECTIONS ---------------- */
-
-@Composable
-fun QuickLinksSection() {
-    val context = LocalContext.current
-    LazyRow(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 8.dp, horizontal = 12.dp),
-        horizontalArrangement = Arrangement.SpaceAround
-    ) {
-        items(quickLinks) { link ->
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.padding(horizontal = 8.dp).clickable { 
-                    val intent = when(link.name) {
-                        "Gems" -> Intent(context, GemsActivity::class.java)
-                        "Sale Live" -> Intent(context, SaleLiveActivity::class.java)
-                        "Choice" -> Intent(context, ChoiceActivity::class.java)
-                        "Freebie" -> Intent(context, FreebieActivity::class.java)
-                        "Free Delivery" -> Intent(context, FreeDeliveryActivity::class.java)
-                        else -> null
-                    }
-                    intent?.let { context.startActivity(it) }
-                }
-            ) {
-                Icon(link.icon, contentDescription = link.name, tint = Color(0xFFF57224))
-                Text(link.name, fontSize = 10.sp, fontWeight = FontWeight.Medium, modifier = Modifier.widthIn(max = 60.dp))
-            }
-        }
-    }
-}
-
-
-@Composable
-fun WelcomeBanner() {
-    val context = LocalContext.current
-    Card(
-        modifier = Modifier
-            .padding(horizontal = 12.dp, vertical = 8.dp)
-            .fillMaxWidth()
-            .clickable { Toast.makeText(context, "Welcome Banner Clicked", Toast.LENGTH_SHORT).show() },
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFFFFF0E1))
-    ) {
-        Row(
-            modifier = Modifier.padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text("Welcome: 15% OFF + Free Delivery", fontWeight = FontWeight.Bold)
-                Spacer(modifier = Modifier.height(8.dp))
-                Row {
-                    Column {
-                        Text("Up to Rs. 120", color = Color(0xFFF57224), fontWeight = FontWeight.Bold)
-                        Text("New User Exclusive", fontSize = 11.sp)
-                    }
-                    Spacer(modifier = Modifier.width(16.dp))
-                    Column {
-                        Text("Rs. 200", color = Color(0xFFF57224), fontWeight = FontWeight.Bold)
-                        Text("Save on Delivery", fontSize = 11.sp)
-                    }
-                }
-            }
-            Button(
-                onClick = { Toast.makeText(context, "Collect All Clicked", Toast.LENGTH_SHORT).show() },
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF57224))
-            ) {
-                Text("Collect All")
-            }
-        }
-    }
-}
-
-@Composable
-fun MegaDealsBanner() {
-    Image(
-        painter = painterResource(id = R.drawable.offer_banner),
-        contentDescription = "Mega Deals",
-        contentScale = ContentScale.FillWidth,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 12.dp, vertical = 8.dp)
-            .clip(RoundedCornerShape(12.dp))
-    )
-}
-
-@Composable
-fun FlashSaleSection(searchQuery: String = "") {
-    val source = com.example.e_commerceelectrocart.firestore.ProductRepository.products
-    val filtered = if (searchQuery.isBlank()) source.shuffled() else source.filter { it.name.contains(searchQuery, true) }
-
-    Column(modifier = Modifier.padding(12.dp)) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Text("Flash Sale", fontSize = 20.sp, fontWeight = FontWeight.Bold)
-            Spacer(modifier = Modifier.width(16.dp))
-            Row {
-                Card(shape = RoundedCornerShape(4.dp), colors = CardDefaults.cardColors(containerColor = Color.Black)) {
-                    Text("01", color = Color.White, modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp))
-                }
-                Text(" : ", fontWeight = FontWeight.Bold)
-                Card(shape = RoundedCornerShape(4.dp), colors = CardDefaults.cardColors(containerColor = Color.Black)) {
-                    Text("13", color = Color.White, modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp))
-                }
-                Text(" : ", fontWeight = FontWeight.Bold)
-                Card(shape = RoundedCornerShape(4.dp), colors = CardDefaults.cardColors(containerColor = Color.Black)) {
-                    Text("15", color = Color.White, modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp))
-                }
-            }
-            Spacer(modifier = Modifier.weight(1f))
-            Text("SHOP MORE >", fontSize = 12.sp, color = Color(0xFFF57224), fontWeight = FontWeight.Bold)
-        }
+    Column(modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)) {
+        SectionHeader(title = "Recommended for you", actionText = "See More") { /* TODO */ }
         Spacer(modifier = Modifier.height(8.dp))
-        LazyRow {
+        LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             items(filtered) { product ->
                 ProductCard(product)
             }
         }
+    }
+}
+
+@Composable
+fun SectionHeader(title: String, actionText: String, onActionClick: () -> Unit) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(title, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color(0xFF102A43))
+        Spacer(modifier = Modifier.weight(1f))
+        Text(
+            actionText,
+            fontSize = 13.sp,
+            fontWeight = FontWeight.SemiBold,
+            color = Color(0xFF0F9D58),
+            modifier = Modifier.clickable(onClick = onActionClick)
+        )
     }
 }
 
@@ -290,13 +326,15 @@ fun DashboardTopBar(searchText: String, onSearchChange: (String) -> Unit, onCart
                 onValueChange = { onSearchChange(it) },
                 leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Search Icon") },
                 placeholder = { Text("Search products, categories...") },
-                modifier = Modifier.fillMaxWidth().height(48.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(52.dp),
                 shape = RoundedCornerShape(24.dp),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = Color.Transparent,
                     unfocusedBorderColor = Color.Transparent,
-                    focusedContainerColor = Color(0xFFF2F3F5),
-                    unfocusedContainerColor = Color(0xFFF2F3F5)
+                    focusedContainerColor = Color(0xFFF0F3F7),
+                    unfocusedContainerColor = Color(0xFFF0F3F7)
                 )
             )
         },
@@ -307,11 +345,8 @@ fun DashboardTopBar(searchText: String, onSearchChange: (String) -> Unit, onCart
             IconButton(onClick = { /* TODO: Notifications */ }) {
                 Icon(Icons.Default.Notifications, contentDescription = "Notifications")
             }
-            IconButton(onClick = { /* TODO: Profile */ }) {
-                Icon(Icons.Default.Person, contentDescription = "Profile")
-            }
         },
-        colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.White),
+        colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFFF9FAFC)),
         modifier = Modifier.fillMaxWidth()
     )
 }
