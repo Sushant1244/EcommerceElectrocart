@@ -7,11 +7,7 @@ import java.io.File
 import java.io.PrintWriter
 import java.io.StringWriter
 
-/**
- * The main Application class, annotated for Hilt dependency injection.
- * Adds a global uncaught exception handler that writes a crash log file
- * into the app's files directory and logs the stacktrace to Logcat.
- */
+
 @HiltAndroidApp
 class ElectrocartApplication : Application() {
 	companion object {
