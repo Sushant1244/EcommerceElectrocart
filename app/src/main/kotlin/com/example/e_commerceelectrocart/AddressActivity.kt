@@ -27,6 +27,7 @@ class AddressActivity : ComponentActivity() {
         setContent {
             EcommerceElectrocartTheme {
                 AddressScreen()
+
             }
         }
     }
